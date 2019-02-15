@@ -15,8 +15,8 @@ All data should be put into `dataset/$data_name` folder in a similar format as `
 To replicate the experiments, first prepare the required dataset as below:
 
 - SemEval: SemEval 2010 Task 8 data (included in `dataset/semeval`)
-- TACRED: The TAC Relation Extraction Dataset ([download](https://github.com/yuhaozhang/tacred-relation/tree/master/dataset/tacred))
-  - Put the official dataset is a folder under `dataset/`.
+- TACRED: The TAC Relation Extraction Dataset ([download](https://catalog.ldc.upenn.edu/LDC2018T24))
+  - Put the official dataset (in JSON format) under folder `dataset/tacred` in a similar format like [here](https://github.com/yuhaozhang/tacred-relation/tree/master/dataset/tacred).
 
 Then use the scripts from `utils/data_utils.py` to further preprocess the data. For SemEval, the script split the original training data into two sets (labeled and unlabeled) and then separate them into multiple ratios. For TACRED, the script first perform some preprocessing to ensure the same format as SemEval.
 
