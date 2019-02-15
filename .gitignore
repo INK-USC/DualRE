@@ -1,0 +1,15 @@
+*.pdf
+*.swp
+*.sh
+tuning_commands.txt
+!run-once.sh
+/dataset/*
+!/dataset/semeval/
+/dataset/semeval/*-*.json
+/utils/viz.py
+/baseline
+results/
+/saved_models
+**/.vectors_cache/
+**/__pycache__/
+**/.DS_Store
