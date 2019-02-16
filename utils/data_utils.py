@@ -38,7 +38,7 @@ def get_pst(tokens, i, j):
     return list(map(str, pst))
 
 
-def read_from_tacred(data_name, in_dir, out_dir):
+def convert_tacred_format(data_name, in_dir, out_dir):
     fname = in_dir / ('%s.json' % data_name)
     oname = out_dir / ('%s.json' % data_name)
     instances = []
@@ -106,10 +106,11 @@ def main():
 
     in_dir = Path(args['in_dir'])
     out_dir = Path(args['out_dir'])
+
     print('Reading from raw data...')
     for split in ['dev', 'train', 'test']:
         if args['data_name'] == 'tacred':
-            read_from_tacred(split, in_dir, out_dir)
+            convert_tacred_format(split, in_dir, out_dir)
         elif args['data_name'] == 'semeval':
             pass
         else:

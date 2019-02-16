@@ -20,6 +20,10 @@ To replicate the experiments, first prepare the required dataset as below:
 
 Then use the scripts from `utils/data_utils.py` to further preprocess the data. For SemEval, the script split the original training data into two sets (labeled and unlabeled) and then separate them into multiple ratios. For TACRED, the script first perform some preprocessing to ensure the same format as SemEval.
 
+```bash
+python utils/data_utils.py --data_name semeval --in_dir dataset/semeval --out_dir dataset/semeval  # update the original repository
+```
+
 ## Model Running
 
 To run DualRE on specific dataset, check out `run-once.sh` for required parameters. For example, to run DualRE model on SemEval with 10% of labeled data and 50% of unlabeled data, and save the result logs in a specific format, use the following command:

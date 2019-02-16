@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# 
+
 data_name=$1
 labeled_ratio=$2
 unlabeled_ratio=$3
