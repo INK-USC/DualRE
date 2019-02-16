@@ -7,25 +7,6 @@ import collections
 from pathlib import Path
 
 
-def find_index(sen_split, word_split):
-    index1 = -1
-    index2 = -1
-    for i in range(len(sen_split)):
-        if str(sen_split[i]) == str(word_split[0]):
-            flag = True
-            k = i
-            for j in range(len(word_split)):
-                if word_split[j] != sen_split[k]:
-                    flag = False
-                if k < len(sen_split) - 1:
-                    k += 1
-            if flag:
-                index1 = i
-                index2 = i + len(word_split)
-                break
-    return index1, index2
-
-
 def mask_tokens(tokens, subj, obj):
     (i1, j1, t1), (i2, j2, t2) = subj, obj
     tokens = tokens[:i1] + ["SUBJ-%s" % t1] * (j1 + 1 - i1) + tokens[j1 + 1:]
@@ -45,6 +26,8 @@ def convert_tacred_format(data_name, in_dir, out_dir):
     for data in json.load(open(fname)):
         data.pop('stanford_deprel', None)
         data.pop('stanford_head', None)
+        data['subj_pst'] = get_pst(data['tokens'], data['subj_start'], data['subj_end'])
+        data['obj_pst'] = get_pst(data['tokens'], data['obj_start'], data['obj_end'])
         data['tokens'] = mask_tokens(data["tokens"],
                                      (data['subj_start'], data['subj_end'], data['subj_type']),
                                      (data['obj_start'], data['obj_end'], data['obj_type']))
@@ -107,22 +90,23 @@ def main():
     in_dir = Path(args['in_dir'])
     out_dir = Path(args['out_dir'])
 
-    print('Reading from raw data...')
-    for split in ['dev', 'train', 'test']:
-        if args['data_name'] == 'tacred':
-            convert_tacred_format(split, in_dir, out_dir)
-        elif args['data_name'] == 'semeval':
-            pass
-        else:
-            raise ValueError('Data type %s not accepted.' % args['data_name'])
+    convert_tacred_format('train-0.02', in_dir, out_dir)
+    # print('Reading from raw data...')
+    # for split in ['dev', 'train', 'test']:
+    #     if args['data_name'] == 'tacred':
+    #         convert_tacred_format(split, in_dir, out_dir)
+    #     elif args['data_name'] == 'semeval':
+    #         pass
+    #     else:
+    #         raise ValueError('Data type %s not accepted.' % args['data_name'])
 
-    print('Splitting into train and raw...')
-    split_parts(out_dir / 'train.json', 0.5, ['train-0.5.json', 'raw-0.5.json'])
-    print('Sample from data...')
-    sample_from_data(out_dir / 'train-0.5.json',
-                     [0.2, 0.1])  # actually sampling 10% and 5% of the original training data
-    sample_from_data(out_dir / 'raw-0.5.json',
-                     [0.2, 0.1])  # actually sampling 10% and 5% of the original training data
+    # print('Splitting into train and raw...')
+    # split_parts(out_dir / 'train.json', 0.5, ['train-0.5.json', 'raw-0.5.json'])
+    # print('Sample from data...')
+    # sample_from_data(out_dir / 'train-0.5.json',
+    #                  [0.2, 0.1])  # actually sampling 10% and 5% of the original training data
+    # sample_from_data(out_dir / 'raw-0.5.json',
+    #                  [0.2, 0.1])  # actually sampling 10% and 5% of the original training data
 
 
 if __name__ == '__main__':
