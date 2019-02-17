@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# CUDA_VISIBLE_DEVICES=7 ./run-once.sh tacred 0.02 0.98 Self-Training test --seed=1
 
 data_name=$1
 labeled_ratio=$2

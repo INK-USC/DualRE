@@ -24,6 +24,8 @@ def convert_tacred_format(data_name, in_dir, out_dir):
     oname = out_dir / ('%s.json' % data_name)
     instances = []
     for data in json.load(open(fname)):
+        if 'token' in data:
+            data['tokens'] = data.pop('token')
         data.pop('stanford_deprel', None)
         data.pop('stanford_head', None)
         data['subj_pst'] = get_pst(data['tokens'], data['subj_start'], data['subj_end'])
@@ -90,23 +92,22 @@ def main():
     in_dir = Path(args['in_dir'])
     out_dir = Path(args['out_dir'])
 
-    convert_tacred_format('train-0.02', in_dir, out_dir)
-    # print('Reading from raw data...')
-    # for split in ['dev', 'train', 'test']:
-    #     if args['data_name'] == 'tacred':
-    #         convert_tacred_format(split, in_dir, out_dir)
-    #     elif args['data_name'] == 'semeval':
-    #         pass
-    #     else:
-    #         raise ValueError('Data type %s not accepted.' % args['data_name'])
+    print('Reading from raw data...')
+    for split in ['dev', 'train', 'test']:
+        if args['data_name'] == 'tacred':
+            convert_tacred_format(split, in_dir, out_dir)
+        elif args['data_name'] == 'semeval':
+            pass
+        else:
+            raise ValueError('Data type %s not accepted.' % args['data_name'])
 
-    # print('Splitting into train and raw...')
-    # split_parts(out_dir / 'train.json', 0.5, ['train-0.5.json', 'raw-0.5.json'])
-    # print('Sample from data...')
-    # sample_from_data(out_dir / 'train-0.5.json',
-    #                  [0.2, 0.1])  # actually sampling 10% and 5% of the original training data
-    # sample_from_data(out_dir / 'raw-0.5.json',
-    #                  [0.2, 0.1])  # actually sampling 10% and 5% of the original training data
+    print('Splitting into train and raw...')
+    split_parts(out_dir / 'train.json', 0.5, ['train-0.5.json', 'raw-0.5.json'])
+    print('Sample from data...')
+    sample_from_data(out_dir / 'train-0.5.json',
+                     [0.2, 0.1])  # actually sampling 10% and 5% of the original training data
+    sample_from_data(out_dir / 'raw-0.5.json',
+                     [0.2, 0.1])  # actually sampling 10% and 5% of the original training data
 
 
 if __name__ == '__main__':
