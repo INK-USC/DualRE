@@ -6,6 +6,7 @@ import argparse
 import torch
 from torch.autograd import Variable
 from torchtext import data
+import functools
 
 from model.predictor import Predictor
 from model.selector import Selector
@@ -107,8 +108,8 @@ RELATION = data.Field(sequential=False, unk_token=None, pad_token=None)
 POS = data.Field(sequential=True, batch_first=True)
 NER = data.Field(sequential=True, batch_first=True)
 PST = data.Field(sequential=True, batch_first=True)
-PR_CONFIDENCE = data.Field(sequential=False, use_vocab=False, tensor_type=torch.FloatTensor)
-SL_CONFIDENCE = data.Field(sequential=False, use_vocab=False, tensor_type=torch.FloatTensor)
+PR_CONFIDENCE = data.Field(sequential=False, use_vocab=False, dtype=torch.float)
+SL_CONFIDENCE = data.Field(sequential=False, use_vocab=False, dtype=torch.float)
 
 FIELDS = {
     'tokens': ('token', TOKEN),
@@ -163,6 +164,10 @@ helper.ensure_dir(opt['p_dir'], verbose=True)
 helper.ensure_dir(opt['s_dir'], verbose=True)
 
 TOKEN.vocab.load_vectors('glove.840B.300d', cache='./dataset/.vectors_cache')
+# TOKEN.vocab.load_vectors(
+#     'glove.840B.300d',
+#     cache='./dataset/.vectors_cache',
+#     unk_init=functools.partial(torch.nn.init.uniform_, a=-1, b=1))  # randomly 
 if TOKEN.vocab.vectors is not None:
     opt['emb_dim'] = TOKEN.vocab.vectors.size(1)
 
@@ -183,7 +188,7 @@ def load_best_model(model_dir, model_type='predictor'):
 
 
 num_iters = math.ceil(1.0 / opt['data_ratio'])
-if args.num_iters > 0:
+if args.num_iters >= 0:
     num_iters = min(num_iters, args.num_iters)
 k_samples = math.ceil(len(dataset_infer.examples) * opt['data_ratio'])
 train_label_distribution = get_relation_distribution(dataset_train)
