@@ -3,6 +3,7 @@
 import math
 import random
 import argparse
+import sys
 import torch
 from torch.autograd import Variable
 from torchtext import data
@@ -43,6 +44,15 @@ parser.add_argument(
 parser.add_argument(
     '--alpha', type=float, default=0.5, help='confidence hyperparameter for predictor.')
 parser.add_argument('--beta', type=float, default=2, help='confidence hyperparameter for selector')
+parser.add_argument(
+    '--continue_training',
+    type=bool,
+    default=False,
+    help=
+    'whether to start over again for self-training/dualre/re-ensemble methods, default is start over.'
+)
+parser.add_argument(
+    '--bidirectional', default=False, type=bool, help='whether to use bidirectional RNN.')
 
 # Begin original TACRED arguments
 parser.add_argument('--p_dir', type=str, help='Directory of the predictor.')
@@ -122,7 +132,9 @@ FIELDS = {
     'sl_confidence': ('sl_confidence', SL_CONFIDENCE)
 }
 dataset_vocab = data.TabularDataset(
-    path=opt['data_dir'] + '/train.json', format='json', fields=FIELDS)
+    path=opt['data_dir'] + '/train-' + str(opt['labeled_ratio']) + '.json',
+    format='json',
+    fields=FIELDS)
 dataset_train = data.TabularDataset(
     path=opt['data_dir'] + '/train-' + str(opt['labeled_ratio']) + '.json',
     format='json',
@@ -167,7 +179,7 @@ TOKEN.vocab.load_vectors('glove.840B.300d', cache='./dataset/.vectors_cache')
 # TOKEN.vocab.load_vectors(
 #     'glove.840B.300d',
 #     cache='./dataset/.vectors_cache',
-#     unk_init=functools.partial(torch.nn.init.uniform_, a=-1, b=1))  # randomly 
+#     unk_init=functools.partial(torch.nn.init.uniform_, a=-1, b=1))  # randomly
 if TOKEN.vocab.vectors is not None:
     opt['emb_dim'] = TOKEN.vocab.vectors.size(1)
 
@@ -193,6 +205,7 @@ if args.num_iters >= 0:
 k_samples = math.ceil(len(dataset_infer.examples) * opt['data_ratio'])
 train_label_distribution = get_relation_distribution(dataset_train)
 dev_f1_iter, test_f1_iter = [], []
+predictor, selector = None, None
 
 for num_iter in range(num_iters + 1):
     print('')
@@ -212,8 +225,9 @@ for num_iter in range(num_iters + 1):
     helper.print_config(opt)
 
     # prediction module
-    predictor = Predictor(opt, emb_matrix=TOKEN.vocab.vectors)
-    model = Trainer(opt, predictor, model_type='predictor')
+    if predictor is None or not opt['continue_training']:
+        predictor = Predictor(opt, emb_matrix=TOKEN.vocab.vectors)
+        model = Trainer(opt, predictor, model_type='predictor')
     model.train(dataset_train, dataset_dev)
 
     # Evaluate
@@ -242,10 +256,11 @@ for num_iter in range(num_iters + 1):
         helper.print_config(opt)
 
         # model
-        selector = Selector(opt, emb_matrix=TOKEN.vocab.vectors)
-        if args.selector_model == 'predictor':
-            selector = Predictor(opt, emb_matrix=TOKEN.vocab.vectors)
-        model = Trainer(opt, selector, model_type=args.selector_model)
+        if selector is None or not opt['continue_training']:
+            selector = Selector(opt, emb_matrix=TOKEN.vocab.vectors)
+            if args.selector_model == 'predictor':
+                selector = Predictor(opt, emb_matrix=TOKEN.vocab.vectors)
+            model = Trainer(opt, selector, model_type=args.selector_model)
         model.train(dataset_train, dataset_dev)
 
         # Sample from cur_model
@@ -260,6 +275,7 @@ for num_iter in range(num_iters + 1):
     # update dataset
     dataset_train.examples = dataset_train.examples + new_examples
     dataset_infer.examples = rest_examples
+    sys.stdout.flush()
 
 scorer.print_table(
     dev_f1_iter, test_f1_iter, header='Best dev and test F1 with seed=%s:' % args.seed)
