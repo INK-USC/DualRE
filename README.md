@@ -2,6 +2,8 @@
 
 Source code for WWW'19 paper [Learning Dual Retrieval Module for Semi-supervised Relation Extraction](https://arxiv.org/abs/1902.07814).
 
+[Presentation](https://docs.google.com/presentation/d/15TLIQOWhMa3MCkDrCiBUz2r2HBJx9P79R-EmouXsJB4/edit?usp=sharing) for WWW
+
 DualRE is a **semi-supervised relation extraction** model, that proposes to construct a retrieval module as the dual problem of relation prediction. Two modules are trained in an iterative way and retrieve new instances with higher quality.
 
 ## Benchmark
