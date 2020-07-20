@@ -217,7 +217,6 @@ class Trainer(object):
 
         for batch in iterator_unlabeled:
             inputs, _ = batch_to_input(batch, self.opt['vocab_pad_id'])
-            # print(inputs)
             preds += self.predict(inputs)[1]
 
         meta_idxs = []
@@ -314,7 +313,7 @@ class Trainer(object):
         loss.backward()
         torch.nn.utils.clip_grad_norm(self.model.parameters(), self.opt['max_grad_norm'])
         self.optimizer.step()
-        loss_val = loss.data.item()
+        loss_val = loss.data[0]
         return loss_val
 
     def predict(self, inputs, target=None):
@@ -325,7 +324,7 @@ class Trainer(object):
 
         self.model.eval()
         logits, _ = self.model(inputs)
-        loss = None if target is None else self.criterion(logits, target).mean().data.item()
+        loss = None if target is None else self.criterion(logits, target).data[0]
 
         if self.model_type == 'predictor':
             probs = F.softmax(logits, dim=1).data.cpu().numpy().tolist()

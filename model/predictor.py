@@ -9,7 +9,6 @@ import torch.nn.functional as F
 from .layers import Classifier
 from .encoder import RNNEncoder, CNNEncoder
 
-
 class Predictor(nn.Module):
     """ A sequence model for relation extraction. """
 
@@ -17,7 +16,7 @@ class Predictor(nn.Module):
         super(Predictor, self).__init__()
         self.encoder = RNNEncoder(opt, emb_matrix)
         self.classifier = Classifier(opt)
-
+    
     def forward(self, inputs):
         encoding = self.encoder(inputs)
         logits = self.classifier(encoding)
@@ -28,5 +27,3 @@ class Predictor(nn.Module):
         logits = self.classifier(encoding)
         preds = F.softmax(logits, dim=-1)
         return preds
-
-

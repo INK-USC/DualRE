@@ -12,8 +12,8 @@ RELATION = data.Field(sequential=False, unk_token=None, pad_token=None)
 POS = data.Field(sequential=True, batch_first=True)
 NER = data.Field(sequential=True, batch_first=True)
 PST = data.Field(sequential=True, batch_first=True)
-PR_CONFIDENCE = data.Field(sequential=False, use_vocab=False, dtype=torch.float)
-SL_CONFIDENCE = data.Field(sequential=False, use_vocab=False, dtype=torch.float)
+PR_CONFIDENCE = data.Field(sequential=False, use_vocab=False, tensor_type=torch.FloatTensor)
+SL_CONFIDENCE = data.Field(sequential=False, use_vocab=False, tensor_type=torch.FloatTensor)
 
 FIELDS = {
     'tokens': ('token', TOKEN),
