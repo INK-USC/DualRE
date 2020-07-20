@@ -56,7 +56,8 @@ python utils/data_utils.py --data_name semeval --in_dir dataset/semeval --out_di
 To run DualRE on specific dataset, check out `run-once.sh` for required parameters. For example, to run DualRE model on SemEval with 10% of labeled data and 50% of unlabeled data, and save the result logs in a specific format, use the following command:
 
 ```bash
-./run-once.sh semeval 0.1 0.5 DualRE >> results/semeval/DualRE/dr0.1_0.5-log.txt
+mkdir -p results/semeval/DualRE
+./run-once.sh semeval 0.1 0.5 DualRE > results/semeval/DualRE/dr0.1_0.5-log.txt
 ```
 
 `run-once.sh` script also support some baseline models such as Self-Training and RE-Ensemble.
@@ -71,7 +72,7 @@ The output log stores the precision, recall and F-1 in each iteration at the end
 python utils/scorer.py semeval DualRE 0.1 0.5
 ```
 
-The scripts suppose the output logs are stored with the format `results/semeval/DualRE/dr0.1_0.5.*\.txt`, with different logs indicating different runs of experiments.
+The scripts suppose the output logs are stored with the format `results/semeval/DualRE/dr0.1_0.5*\.txt`, with different logs indicating different runs of experiments.
 
 ## Code Overview
 

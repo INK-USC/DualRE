@@ -6,6 +6,7 @@ import random
 import collections
 from pathlib import Path
 
+random.seed(42)
 
 def mask_tokens(tokens, subj, obj):
     (i1, j1, t1), (i2, j2, t2) = subj, obj
@@ -54,13 +55,16 @@ def stratified_sample(data_dict, ratio):
     return new_data, rest_data
 
 
-def split_parts(fname, ratio, onames):
-    data = [json.loads(line) for line in open(fname, "r")]
+def split_parts(fname, initial_train_ratio, onames):
+    all_data = [json.loads(line) for line in open(fname, "r")]
     data_dict = collections.defaultdict(list)
-    for entry in data:
+    for entry in all_data:
         data_dict[entry['relation']].append(entry)
-    new_data, rest_data = stratified_sample(data_dict, ratio)
-    for data, oname in zip((new_data, rest_data), onames):
+    train_data, raw_data = stratified_sample(data_dict, initial_train_ratio)
+    for entry in raw_data:
+        entry['pr_confidence'] = 0
+        entry['sl_confidence'] = 0
+    for data, oname in zip((train_data, raw_data), onames):
         oname = fname.parent / oname
         print(oname)
         with open(oname, 'w') as o:
@@ -68,14 +72,15 @@ def split_parts(fname, ratio, onames):
                 o.write(json.dumps(d, ensure_ascii=True) + '\n')
 
 
-def sample_from_data(fname, ratios):
+def sample_from_data(fname, intial_ratio, absolute_ratios):
     data = [json.loads(line) for line in open(fname, "r")]
     data_dict = collections.defaultdict(list)
     for entry in data:
         data_dict[entry['relation']].append(entry)
-    for ratio in ratios:
-        new_data, _ = stratified_sample(data_dict, ratio)
-        oname = fname.parent / ('%s-%s.json' % (fname.stem.split('-')[0], ratio))
+    for absolute_ratio in absolute_ratios:
+        relative_ratio = absolute_ratio / intial_ratio
+        new_data, _ = stratified_sample(data_dict, relative_ratio)
+        oname = fname.parent / ('%s-%s.json' % (fname.stem.split('-')[0], absolute_ratio))
         print(oname)
         with open(oname, 'w') as o:
             for d in new_data:
@@ -102,12 +107,15 @@ def main():
             raise ValueError('Data type %s not accepted.' % args['data_name'])
 
     print('Splitting into train and raw...')
-    split_parts(out_dir / 'train.json', 0.5, ['train-0.5.json', 'raw-0.5.json'])
+    initial_train_ratio = 0.5
+    initial_raw_ratio = 1 - initial_train_ratio
+    split_parts(out_dir / 'train.json', initial_train_ratio,
+                [f'train-{initial_train_ratio}.json', f'raw-{initial_raw_ratio}.json'])
     print('Sample from data...')
-    sample_from_data(out_dir / 'train-0.5.json',
-                     [0.2, 0.1])  # actually sampling 10% and 5% of the original training data
-    sample_from_data(out_dir / 'raw-0.5.json',
-                     [0.2, 0.1])  # actually sampling 10% and 5% of the original training data
+    sample_from_data(out_dir / f'train-{initial_train_ratio}.json', initial_train_ratio,
+                     [0.05, 0.1, 0.3])
+    sample_from_data(out_dir / f'raw-{initial_raw_ratio}.json', initial_train_ratio,
+                     [])
 
 
 if __name__ == '__main__':
