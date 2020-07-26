@@ -1,22 +1,21 @@
-import torch
 from torch import nn
 from torch.nn import init
-from torch.autograd import Variable
-import torch.nn.functional as F
+
 
 class Classifier(nn.Module):
     def __init__(self, opt):
         super(Classifier, self).__init__()
-        self.hidden_dim = opt['hidden_dim']
-        self.num_class = opt['num_class']
+        self.hidden_dim = opt["hidden_dim"]
+        self.num_class = opt["num_class"]
         self.linear = nn.Linear(self.hidden_dim, self.num_class)
 
         self.linear.bias.data.fill_(0)
-        init.xavier_uniform(self.linear.weight, gain=1) # initialize linear layer
+        init.xavier_uniform(self.linear.weight, gain=1)  # initialize linear layer
 
     def forward(self, inputs):
         logits = self.linear(inputs)
         return logits
+
 
 class Discriminator(nn.Module):
     """Discriminator model for source domain."""
@@ -32,7 +31,7 @@ class Discriminator(nn.Module):
             nn.Linear(hidden_dims, hidden_dims),
             nn.LeakyReLU(0.2),
             nn.Linear(hidden_dims, output_dims),
-            nn.Sigmoid()
+            nn.Sigmoid(),
         )
 
     def forward(self, inputs):

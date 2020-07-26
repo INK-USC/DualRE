@@ -4,7 +4,7 @@ Score the predictions with gold labels, using precision, recall and F1 metrics.
 """
 
 import argparse
-import sys, os
+import sys
 from collections import Counter
 import numpy as np
 
