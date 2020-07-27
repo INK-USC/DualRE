@@ -37,7 +37,6 @@ def evaluate(model, dataset, evaluate_type='prf', verbose=False):
     iterator_test = data.Iterator(
         dataset=dataset,
         batch_size=model.opt['batch_size'],
-        device=-1,
         repeat=False,
         train=True,
         shuffle=False,
@@ -96,12 +95,11 @@ class Trainer(object):
         self.model_type = model_type
         self.model = model
         if model_type == 'predictor':
-            self.criterion = nn.CrossEntropyLoss(reduce=False)
+            self.criterion = nn.CrossEntropyLoss(reduction='none')
         elif model_type == 'pointwise':
             self.criterion = nn.BCEWithLogitsLoss()
         elif model_type == 'pairwise':
-            self.criterion = nn.BCEWithLogitsLoss(
-            )  # Only a placeholder, will NOT use this criterion
+            self.criterion = nn.BCEWithLogitsLoss()  # Only a placeholder, will NOT use this criterion
         self.parameters = [p for p in self.model.parameters() if p.requires_grad]
 
         if opt['cuda']:
@@ -115,7 +113,6 @@ class Trainer(object):
         iterator_train = data.Iterator(
             dataset=dataset_train,
             batch_size=opt['batch_size'],
-            device=-1,
             repeat=False,
             train=True,
             shuffle=True,
@@ -124,7 +121,6 @@ class Trainer(object):
         iterator_dev = data.Iterator(
             dataset=dataset_dev,
             batch_size=opt['batch_size'],
-            device=-1,
             repeat=False,
             train=True,
             sort_key=lambda x: len(x.token),
@@ -205,7 +201,6 @@ class Trainer(object):
         iterator_unlabeled = data.Iterator(
             dataset=dataset,
             batch_size=self.opt['batch_size'],
-            device=-1,
             repeat=False,
             train=False,
             shuffle=False,
@@ -287,8 +282,7 @@ class Trainer(object):
             confidence = sl_confidence.unsqueeze(1).expand(-1, logits.size(1))
             if self.opt['cuda']:
                 confidence = confidence.cuda()
-            loss = F.binary_cross_entropy_with_logits(
-                logits, target, weight=confidence, size_average=True)
+            loss = F.binary_cross_entropy_with_logits(logits, target, weight=confidence)
             loss *= self.opt['num_class']
         elif self.model_type == 'pairwise':
             # Form a matrix with row_i indicate which samples are its negative samples (0, 1)
@@ -303,17 +297,17 @@ class Trainer(object):
             neg_logits = logits.t().index_select(0, target)
             # calculate pairwise loss
             loss = F.binary_cross_entropy_with_logits(
-                pos_logits - neg_logits, (matrix.float() * 1 / 2 + 1 / 2) * confidence,
-                size_average=True)
+                pos_logits - neg_logits, (matrix.float() * 1 / 2 + 1 / 2) * confidence
+            )
             loss *= self.opt['num_class']
         else:
             loss = self.criterion(logits, target)
             loss = torch.mean(loss * pr_confidence)
 
         loss.backward()
-        torch.nn.utils.clip_grad_norm(self.model.parameters(), self.opt['max_grad_norm'])
+        torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.opt['max_grad_norm'])
         self.optimizer.step()
-        loss_val = loss.data[0]
+        loss_val = loss.item()
         return loss_val
 
     def predict(self, inputs, target=None):
@@ -324,16 +318,16 @@ class Trainer(object):
 
         self.model.eval()
         logits, _ = self.model(inputs)
-        loss = None if target is None else self.criterion(logits, target).data[0]
+        loss = None if target is None else torch.mean(self.criterion(logits, target)).item()
 
         if self.model_type == 'predictor':
             probs = F.softmax(logits, dim=1).data.cpu().numpy().tolist()
             predictions = np.argmax(probs, axis=1).tolist()
         elif self.model_type == 'pointwise':
-            probs = F.sigmoid(logits).data.cpu().numpy().tolist()
+            probs = torch.sigmoid(logits).data.cpu().numpy().tolist()
             predictions = logits.data.cpu().numpy().tolist()
         elif self.model_type == 'pairwise':
-            probs = F.sigmoid(logits).data.cpu().numpy().tolist()
+            probs = torch.sigmoid(logits).data.cpu().numpy().tolist()
             predictions = logits.data.cpu().numpy().tolist()
 
         return predictions, probs, loss

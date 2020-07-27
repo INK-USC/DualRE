@@ -67,7 +67,7 @@ class PositionAwareAttention(nn.Module):
             projs = [x_proj, q_proj, f_proj]
         else:
             projs = [x_proj, q_proj]
-        scores = self.tlinear(F.tanh(sum(projs)).view(-1, self.attn_size)).view(
+        scores = self.tlinear(torch.tanh(sum(projs)).view(-1, self.attn_size)).view(
             batch_size, seq_len
         )
 
@@ -148,7 +148,6 @@ class RNNEncoder(nn.Module):
         if self.opt["ner_dim"] > 0:
             inputs += [self.ner_emb(ner)]
         inputs = self.drop(torch.cat(inputs, dim=2))  # add dropout to input
-        input_size = inputs.size(2)
 
         # rnn
         h0, c0 = self.zero_state(batch_size)
@@ -226,7 +225,7 @@ class CNNEncoder(nn.Module):
 
     def forward(self, inputs):
         # words: [batch size, seq length]
-        words, masks = inputs["words"], inputs["masks"]
+        words = inputs["words"]
         pos, ner = inputs["pos"], inputs["ner"]
         subj_pst, obj_pst = inputs["subj_pst"], inputs["obj_pst"]
 
@@ -248,6 +247,5 @@ class CNNEncoder(nn.Module):
             for hidden in hiddens
         ]
         hidden = self.drop(torch.cat(hiddens, dim=1))
-        encoding = F.tanh(self.linear(hidden))
+        encoding = torch.tanh(self.linear(hidden))
         return encoding
-

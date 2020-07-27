@@ -33,7 +33,7 @@ Self-Training ([Rosenberg et al., 2005](https://dl.acm.org/citation.cfm?id=10424
 
 ## Get Started
 
-We use ubuntu 18.0 and python 3.6.5 to conduct the experimented documented in paper. The required python packages are documented in `requirements.txt`. Note that we use an early version of pytorch, which may throw several warnings in latest version.
+We use ubuntu 18.0 and python 3.7.0 to conduct the experimented documented in paper. The required python packages are documented in `requirements.txt` (torch==1.5.1)
 
 ### Data Preparation
 

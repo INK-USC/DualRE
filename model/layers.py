@@ -10,7 +10,7 @@ class Classifier(nn.Module):
         self.linear = nn.Linear(self.hidden_dim, self.num_class)
 
         self.linear.bias.data.fill_(0)
-        init.xavier_uniform(self.linear.weight, gain=1)  # initialize linear layer
+        init.xavier_uniform_(self.linear.weight)  # initialize linear layer
 
     def forward(self, inputs):
         logits = self.linear(inputs)

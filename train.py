@@ -76,7 +76,6 @@ parser.add_argument("--id", type=str, default="00", help="Model ID under which t
 parser.add_argument("--info", type=str, default="", help="Optional info for the experiment.")
 
 parser.add_argument("--seed", type=int, default=1)
-# torch.cuda.is_available())
 parser.add_argument("--cuda", type=bool, default=True)
 parser.add_argument("--cpu", action="store_true", help="Ignore CUDA.")
 
@@ -95,12 +94,12 @@ opt = vars(args)
 # load data
 print("Loading data from {} with batch size {}...".format(opt["data_dir"], opt["batch_size"]))
 TOKEN = data.Field(sequential=True, batch_first=True, lower=True, include_lengths=True)
-RELATION = data.Field(sequential=False, unk_token=None, pad_token=None)
+RELATION = data.Field(sequential=False, pad_token=None)
 POS = data.Field(sequential=True, batch_first=True)
 NER = data.Field(sequential=True, batch_first=True)
 PST = data.Field(sequential=True, batch_first=True)
-PR_CONFIDENCE = data.Field(sequential=False, use_vocab=False, tensor_type=torch.FloatTensor)
-SL_CONFIDENCE = data.Field(sequential=False, use_vocab=False, tensor_type=torch.FloatTensor)
+PR_CONFIDENCE = data.Field(sequential=False, use_vocab=False, dtype=torch.float)
+SL_CONFIDENCE = data.Field(sequential=False, use_vocab=False, dtype=torch.float)
 
 FIELDS = {
     "tokens": ("token", TOKEN),

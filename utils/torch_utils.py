@@ -10,7 +10,7 @@ import numpy as np
 
 class MyAdagrad(Optimizer):
     """My modification of the Adagrad optimizer that allows to specify an initial
-    accumulater value. This mimics the behavior of the default Adagrad implementation 
+    accumulater value. This mimics the behavior of the default Adagrad implementation
     in Tensorflow. The default PyTorch Adagrad uses 0 for initial acculmulator value.
 
     Arguments:

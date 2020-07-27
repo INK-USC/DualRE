@@ -12,8 +12,8 @@ RELATION = data.Field(sequential=False, unk_token=None, pad_token=None)
 POS = data.Field(sequential=True, batch_first=True)
 NER = data.Field(sequential=True, batch_first=True)
 PST = data.Field(sequential=True, batch_first=True)
-PR_CONFIDENCE = data.Field(sequential=False, use_vocab=False, tensor_type=torch.FloatTensor)
-SL_CONFIDENCE = data.Field(sequential=False, use_vocab=False, tensor_type=torch.FloatTensor)
+PR_CONFIDENCE = data.Field(sequential=False, use_vocab=False, dtype=torch.float)
+SL_CONFIDENCE = data.Field(sequential=False, use_vocab=False, dtype=torch.float)
 
 FIELDS = {
     "tokens": ("token", TOKEN),
@@ -53,7 +53,6 @@ def split_samples(dataset, meta_idxs, batch_size=50, conf_p=None, conf_s=None):
     iterator_unlabeled = data.Iterator(
         dataset=dataset,
         batch_size=batch_size,
-        device=-1,
         repeat=False,
         train=False,
         shuffle=False,
